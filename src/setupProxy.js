@@ -2,8 +2,8 @@ const proxy = require('http-proxy-middleware');
 
 module.exports = function(app) {
 
-    app.use(proxy('/api', { target: 'http://localhost:8080/', changeOrigin: true }));
-   app.use(proxy('/account', { target: 'http://localhost:8081/' , changeOrigin: true})); 
+    app.use(proxy('/api', { target: 'http://localhost/'}));
+   app.use(proxy('/account', { target: 'http://localhost'})); 
 
 	//app.use(proxy('/api', { target: 'http://'+ window._env_.REACT_APP_API_IP +'/' }));
 	//app.use(proxy('/account', { target: 'http://' + window._env_.REACT_APP_AUTH_IP + '/' }));
