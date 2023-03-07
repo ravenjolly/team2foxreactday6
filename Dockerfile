@@ -4,6 +4,12 @@ COPY . .
 RUN npm install 
 
 ENV PATH="./node_modules/.bin:$PATH"
+ARG api_ip=localhost:8081
+ENV REACT_APP_API_IP=$api_ip
+
+ARG auth_ip=localhost:8081
+ENV REACT_APP_AUTH_IP=$auth_ip
+
 
 COPY . ./
 RUN npm run build
@@ -14,5 +20,6 @@ RUN mkdir /run/nginx && touch /run/nginx/nginx.pid
 WORKDIR /app
 COPY --from=build-env /app/build /app
 COPY ./default.conf /etc/nginx/conf.d/default.conf
+COPY ./default.conf /etc/nginx/conf.d/default.conf.template
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

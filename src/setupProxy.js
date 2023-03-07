@@ -4,9 +4,9 @@ module.exports = function(app) {
 
 //    app.use(proxy('/api', { target: 'http://localhost:8080/' }));
 //   app.use(proxy('/account', { target: 'http://localhost:8081/' })); 
-	
-	app.use(proxy('/api', { target: 'http://172.20.0.2:8080/' }));
-	app.use(proxy('/account', { target: 'http://172.20.0.3:8081/' }));
+
+	app.use(proxy('/api', { target: 'http://'+ process.env.REACT_APP_API_IP +'/' }));
+	app.use(proxy('/account', { target: 'http://' + process.env.REACT_APP_AUTH_IP+ '/' }));
 
 /*     app.use(proxy('/api', { target: 'http://10.111.48.90:8080/' }));
     app.use(proxy('/account', { target: 'http://10.104.111.92:8081/' })); */
