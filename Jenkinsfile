@@ -17,28 +17,27 @@ node {
         sh "docker inspect team2frontend"
     }
    
-      
-    stage ("Deploy to the kube"){
-    	step {
-    	    catchError {
+    stage("Remove previous deployment"){
+         catchError {
             	sh "kubectl delete deployment team2frontend"     	   
-    	    }    	    
-    	    
-    	}
-    	step {
-    	    catchError{
-    	        sh "kubectl delete service team2frontend"
-    	    }    	    
-    	}
-		
-		step {
+    	    }   
+    }
+    
+    stage("Remove previous deployment"){
+         catchError {
+            	sh "kubectl delete deployment team2frontend"     	
+            	sh "kubectl delete service team2frontend"   
+    	    }
+    }
+    
+
+    stage ("Deploy to the kube"){
+    	
+    
 			sh "kubectl create deployment team2frontend --image team2frontend:v1.0"
     	    sh "kubectl expose deployment team2frontend --type=LoadBalancer --port=80"
     	    sh "kubectl set env deployment/team2frontend REACT_APP_AUTH_IP=team2auth:8081"
     	    sh "kubectl set env deployment/team2frontend REACT_APP_API_IP=team2data:8080"   
-		    
-		}
-
     }
     
     
