@@ -14,7 +14,7 @@ node {
     
     stage ("Inspect the docker image - react client"){
         sh "docker images team2frontend"
-        sh "docker inspect team2frontend"
+        //sh "docker inspect team2frontend"
     }
     
      stage("Set minikube environment"){
