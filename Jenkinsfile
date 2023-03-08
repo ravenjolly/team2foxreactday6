@@ -13,7 +13,7 @@ node {
     }
     stage ("Containerize the app-docker build - react client") {
         sh 'docker build --rm -t team2frontend:v1.0 .'       
-         sh 'minikube image load team2frontend:v1.0'        
+        sh 'minikube image load team2frontend:v1.0'        
         
     }
     
@@ -36,7 +36,7 @@ node {
     stage ("Deploy to the kube"){
     	
     
-			sh "kubectl create deployment team2frontend --image team2frontend:v1.0 --image-pull-policy=Never"
+			sh "kubectl create deployment team2frontend --image team2frontend:v1.0"
     	    sh "kubectl expose deployment team2frontend --type=LoadBalancer --port=80"
     	    sh "kubectl set env deployment/team2frontend REACT_APP_AUTH_IP=team2auth:8081"
     	    sh "kubectl set env deployment/team2frontend REACT_APP_API_IP=team2data:8080"   
