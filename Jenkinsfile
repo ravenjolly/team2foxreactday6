@@ -10,14 +10,14 @@ node {
     }
     
     stage ("Inspect the docker image - react client"){
-        sh "docker images team2frontend:v1.0"
-        sh "docker inspect team2frontend:v1.0"
+        sh "docker images team2frontend"
+        sh "docker inspect team2frontend"
     }
     
    
     stage ("Run Docker container instance - react client"){
     	// I dont care if it exists remove it
-    	sh "docker inspect container team2frontend >/dev/null 2>&1 || docker container rm team2frontend " 
+    	sh "bash 'docker inspect container team2frontend >/dev/null 2>&1 || docker container rm team2frontend' " 
     	sh "docker network inspect mccnetwork >/dev/null 2>&1 ||docker network create --driver bridge mccnetwork"
     	
     	///run it then
