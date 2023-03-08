@@ -6,7 +6,11 @@ node {
         git branch: 'main', url: 'https://github.com/ravenjolly/team2foxreactday6.git'
     }
     
-    
+     stage("Set minikube environment"){
+        sh "minikube docker-env"
+        sh "eval \$(minikube -p minikube docker-env)"
+        
+    }
     stage ("Containerize the app-docker build - react client") {
         sh 'docker build --rm -t team2frontend:v1.0 .'
     }
@@ -17,11 +21,7 @@ node {
         //sh "docker inspect team2frontend"
     }
     
-     stage("Set minikube environment"){
-        sh "minikube docker-env"
-        sh "eval \$(minikube -p minikube docker-env)"
-        
-    }
+    
     
     stage("Remove previous deployment"){
          catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')  {
