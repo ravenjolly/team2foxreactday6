@@ -1,37 +1,29 @@
 node {
     
     stage ("Checkout React Client"){
-        git branch: 'main', url: 'https://github.com/foxwas/bah-mcc-react-day6.git'
+        git branch: 'main', url: 'https://github.com/ravenjolly/team2foxreactday6.git'
     }
     
-    stage ("Install dependencies - React Client") {
-       sh 'npm install'
-    }
     
     stage ("Containerize the app-docker build - react client") {
-        sh 'docker build --rm -t mcc-react:v1.0 .'
+        sh 'docker build --rm -t team2frontend:v1.0 .'
     }
     
     stage ("Inspect the docker image - react client"){
-        sh "docker images mcc-react:v1.0"
-        sh "docker inspect mcc-react:v1.0"
+        sh "docker images team2frontend:v1.0"
+        sh "docker inspect team2frontend:v1.0"
     }
     
+   
     stage ("Run Docker container instance - react client"){
-        sh "docker run -d --rm --name mcc-react -p 3000:80 mcc-react:v1.0"
+    	// I dont care if it exists remove it
+    	sh "docker inspect container team2frontend >/dev/null 2>&1 || docker container rm team2frontend " 
+    	sh "docker network inspect mccnetwork >/dev/null 2>&1 ||docker network create --driver bridge mccnetwork"
+    	
+    	///run it then
+        sh "docker run -d --name team2frontend --network mccnetwork -p 3000:80 --expose 80 --env REACT_APP_API_IP=team2data:8080 --env REACT_APP_AUTH_IP=team2auth:8081 team2frontend:v1.0"
     }
 	 
-	stage('User Acceptance Test - react client') {
 	
-	  def response= input message: 'Is this build good to go?',
-	   parameters: [choice(choices: 'Yes\nNo', 
-	   description: '', name: 'Pass')]
-	
-	  if(response=="Yes") {
-	    stage('Release  - react client') {
-	      sh "docker stop mcc-react"
-	      sh "echo MCC react client service is ready to release!"
-	    }
-	  }
-    }
+}
     
