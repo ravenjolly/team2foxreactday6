@@ -17,14 +17,9 @@ node {
         sh "docker inspect team2frontend"
     }
    
-    stage("Remove previous deployment"){
-         catchError {
-            	sh "kubectl delete deployment team2frontend"     	   
-    	    }   
-    }
     
     stage("Remove previous deployment"){
-         catchError {
+         catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')  {
             	sh "kubectl delete deployment team2frontend"     	
             	sh "kubectl delete service team2frontend"   
     	    }
