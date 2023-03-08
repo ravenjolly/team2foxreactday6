@@ -19,18 +19,25 @@ node {
    
       
     stage ("Deploy to the kube"){
-    	steps{
+    	step {
     	    catchError {
             	sh "kubectl delete deployment team2frontend"     	   
     	    }    	    
+    	    
+    	}
+    	step {
     	    catchError{
     	        sh "kubectl delete service team2frontend"
-    	    }
-    	    sh "kubectl create deployment team2frontend --image team2frontend:v1.0"
+    	    }    	    
+    	}
+		
+		step {
+			sh "kubectl create deployment team2frontend --image team2frontend:v1.0"
     	    sh "kubectl expose deployment team2frontend --type=LoadBalancer --port=80"
     	    sh "kubectl set env deployment/team2frontend REACT_APP_AUTH_IP=team2auth:8081"
-    	    sh "kubectl set env deployment/team2frontend REACT_APP_API_IP=team2data:8080"     	    
-    	}
+    	    sh "kubectl set env deployment/team2frontend REACT_APP_API_IP=team2data:8080"   
+		    
+		}
 
     }
     
