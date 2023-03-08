@@ -16,7 +16,12 @@ node {
         sh "docker images team2frontend"
         sh "docker inspect team2frontend"
     }
-   
+    
+     stage("Set minikube environment"){
+        sh "minikube docker-env"
+        sh "eval \$(minikube -p minikube docker-env)"
+        
+    }
     
     stage("Remove previous deployment"){
          catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')  {
