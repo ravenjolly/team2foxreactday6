@@ -12,9 +12,9 @@ pipeline {
         
         stage("Verify it builds "){
             steps{
-                withGradle{
-                    sh "./gradlew clean build"
-                }
+                
+                    sh "npm install"
+                
             }
             
         }
