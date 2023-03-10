@@ -105,7 +105,7 @@ pipeline {
                             sh "kubectl delete service $CONTAINER_NAME"   
     	                }
                         sh "kubectl create deployment $CONTAINER_NAME --image ravenjolly/$CONTAINER_NAME:${TAG}"
-                        sh "kubectl expose deployment $CONTAINER_NAME --type=LoadBalancer --port=8080"
+                        sh "kubectl expose deployment $CONTAINER_NAME --type=LoadBalancer --port=80"
                         sh "kubectl set env deployment/$CONTAINER_NAME REACT_APP_AUTH_IP=team2auth:8081"
                         sh "kubectl set env deployment/$CONTAINER_NAME REACT_APP_API_IP=team2data:8080"
 
