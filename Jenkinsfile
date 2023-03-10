@@ -1,62 +1,155 @@
-
-
-node {
-    
-    stage ("Checkout React Client"){
-        git branch: 'main', url: 'https://github.com/ravenjolly/team2foxreactday6.git'
+pipeline {
+    agent any
+    environment {
+            DOCKERHUB_CREDENTIALS=credentials("ec97f02a-096a-41d0-9084-800bbb992563")
+            CONTAINER_NAME= "team2frontend"
     }
-    
-     stage("Set minikube environment"){
-        sh "minikube docker-env"
-        sh "eval \$(minikube -p minikube docker-env)"
-        
-    }
-    stage ("Containerize the app-docker build - react client") {
-        sh 'docker build --rm -t team2frontend:v1.0 .'       
-        sh 'minikube image load team2frontend:v1.0'        
-        
-    }
-    
-    
-    stage ("Inspect the docker image - react client"){
-        sh "docker images team2frontend"
-        //sh "docker inspect team2frontend"
-    }
-    
-    
-    
-    stage("Remove previous deployment"){
-         catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS')  {
-            	sh "kubectl delete deployment team2frontend"     	
-            	sh "kubectl delete service team2frontend"   
-    	    }
-    }
-    
-
-    stage ("Deploy to the kube"){
-			sh "kubectl create deployment team2frontend --image team2frontend:v1.0"
-    	    sh "kubectl expose deployment team2frontend --type=LoadBalancer --port=80"
-    	    sh "kubectl set env deployment/team2frontend REACT_APP_AUTH_IP=team2auth:8081"
-    	    sh "kubectl set env deployment/team2frontend REACT_APP_API_IP=team2data:8080"   
-    }
-    
-    
-    /**
-    
-    
    
-    stage ("Run Docker container instance - react client"){
-    	steps{
-    	    catchError {
-            	sh "docker container rm team2frontend "     	   
-    	    }
-    	    catchError{
-    	        sh "docker network create --driver bridge mccnetwork"
-    	    }
-    	    sh "docker run -d --name team2frontend --network mccnetwork -p 3000:80 --expose 80 --env REACT_APP_API_IP=team2data:8080 --env REACT_APP_AUTH_IP=team2auth:8081 team2frontend:v1.0"
-    	}
+
+
+   
+    stages{
+        
+        stage("Verify it builds "){
+            steps{
+                withGradle{
+                    sh "./gradlew clean build"
+                }
+            }
+            
+        }
+
+        stage("Verify valid login"){
+            steps {
+			    sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+
+            }
+
+        }
+        stage("Build docker images") {
+            steps {
+                 
+                script {
+                    def TAG = "dev"
+                    if(BRANCH_NAME == "main"){
+                        TAG="prod"
+                        // sh "export ENV_TAG="prod""
+                    }else if(BRANCH_NAME == "Test"){
+                        println("In test")
+                        TAG="tst"
+                        // sh "export ENV_TAG=tst"
+                    }
+
+                    sh "docker build --tag $CONTAINER_NAME:${TAG} ."
+
+
+                }
+
+            }
+            
+        }
+
+       
+
+        stage("Push to dockerhub") {
+           
+            steps{
+                script {
+                    def TAG = "dev"
+                    if(BRANCH_NAME == "main"){
+                        TAG="prod"
+                        // sh "export ENV_TAG="prod""
+                    }else if(BRANCH_NAME == "Test"){
+                        println("In test")
+                        TAG="tst"
+                        // sh "export ENV_TAG=tst"
+                    }
+
+                    echo "Pushing to dockerhub"
+                    sh "docker tag $CONTAINER_NAME:${TAG} ravenjolly/$CONTAINER_NAME:${TAG}"
+                    sh "docker push ravenjolly/$CONTAINER_NAME:${TAG}"
+
+                }
+               
+
+            }
+        }
+
+        
+
+        stage("Deploy"){
+            steps {
+                script {
+                    def TAG = "dev"
+                    if(BRANCH_NAME == "main"){
+                        TAG="prod"
+                        // sh "export ENV_TAG="prod""
+                    }else if(BRANCH_NAME == "Test"){
+                        println("In test")
+                        TAG="tst"
+                        // sh "export ENV_TAG=tst"
+                    }
+
+
+                    if(BRANCH_NAME == "Test"){
+                        catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS'){
+                            sh "docker stop $CONTAINER_NAME"
+                            sh "docker container rm $CONTAINER_NAME"
+                            sh "docker network create mccnetwork --driver=bridge"
+                        }
+                        sh "docker run -d --name $CONTAINER_NAME --network mccnetwork -p 3000:80 --expose 80 --env REACT_APP_API_IP=team2data:8080 --env REACT_APP_AUTH_IP=team2auth:8081 $CONTAINER_NAME:${TAG}"
+
+                    }else if(BRANCH_NAME == "main"){
+                        //deploy to kuberentes
+                        sh "eval \$(minikube docker-env)"
+                        catchError(buildResult: "SUCCESS", stageResult: "SUCCESS") {
+                            sh "kubectl delete deployment $CONTAINER_NAME"     	
+                            sh "kubectl delete service $CONTAINER_NAME"   
+    	                }
+                        sh "kubectl create deployment $CONTAINER_NAME --image ravenjolly/$CONTAINER_NAME:${TAG}"
+                        sh "kubectl expose deployment $CONTAINER_NAME --type=LoadBalancer --port=8080"
+                        sh "kubectl set env deployment/$CONTAINER_NAME REACT_APP_AUTH_IP=team2auth:8081"
+                        sh "kubectl set env deployment/$CONTAINER_NAME REACT_APP_API_IP=team2data:8080"
+
+                    }
+                }
+            }
+
+
+        }
+
+
+        stage("User Acceptance Test - Front End") {
+            steps{
+                script {
+                    def response= input message: "Is this build good to go to test?",
+                    parameters: [choice(choices: "Yes\nNo", 
+                    description: "", name: "Pass")]
+                    
+                    if(response=="Yes") {
+                        
+                    }else{
+                        error("Build rejected.")
+                    }
+                }
+            }
+            
+            
+        }
+
 
     }
-    */
+    post {
+        always {
+            script {
+                if (getContext(hudson.FilePath)) {
+                    sh "docker logout"
+                }
+
+            }
+        }
+    }
+
+
+
 }
-    
